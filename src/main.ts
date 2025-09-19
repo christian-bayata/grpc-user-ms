@@ -1,13 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {
-  ClientsModule,
-  MicroserviceOptions,
-  Transport,
-} from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
+  const config_module = await NestFactory.createApplicationContext(
+    ConfigModule.forRoot(),
+  );
+  const config_service = config_module.get(ConfigService);
+
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
@@ -15,7 +17,7 @@ async function bootstrap() {
       options: {
         package: 'user',
         protoPath: join(__dirname, '../proto/user.proto'),
-        url: '0.0.0.0:50051',
+        url: config_service.get<string>('USER_SERVICE_URL'),
       },
     },
   );
